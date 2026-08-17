@@ -1,0 +1,87 @@
+<%# app/views/meals/_meal_header.html.erb %>
+<div id="meal_header_<%= meal.id %>" class="p-4 sm:p-8 rounded-2xl sm:rounded-3xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl space-y-4 sm:space-y-6 shadow-2xl relative overflow-hidden">
+  <!-- Glow effect -->
+  <div class="absolute -top-16 -right-16 w-60 h-60 <%= meal.exceeded? ? 'bg-rose-500/10' : 'bg-emerald-500/10' %> rounded-full blur-3xl pointer-events-none"></div>
+
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 relative z-10">
+    <div class="space-y-2">
+      <div class="flex items-center justify-between sm:justify-start gap-3">
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight"><%= meal.name %></h1>
+        <a href="<%= edit_meal_path(meal) %>" class="p-2 rounded-xl bg-slate-800/80 border border-slate-700/60 text-slate-300 hover:text-white shrink-0" title="Éditer le repas">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          </svg>
+        </a>
+      </div>
+
+      <!-- Strategy Selector Buttons -->
+      <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 pt-1">
+        <span class="text-[11px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider">Mode :</span>
+        <div class="grid grid-cols-3 sm:flex rounded-xl bg-slate-950 p-1 border border-slate-800 text-xs font-semibold text-center">
+          <%= button_to "Proportionnel", recalculate_meal_path(meal, strategy: "proportional"), method: :post, class: "w-full sm:w-auto px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer text-[11px] sm:text-xs #{meal.strategy == 'proportional' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'}" %>
+          <%= button_to "Équilibré", recalculate_meal_path(meal, strategy: "balanced"), method: :post, class: "w-full sm:w-auto px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer text-[11px] sm:text-xs #{meal.strategy == 'balanced' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'}" %>
+          <%= button_to "Prioritaire", recalculate_meal_path(meal, strategy: "priority"), method: :post, class: "w-full sm:w-auto px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer text-[11px] sm:text-xs #{meal.strategy == 'priority' ? 'bg-emerald-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'}" %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calorie Total Display & SVG Ring -->
+    <div class="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800/60">
+      <div class="text-left sm:text-right">
+        <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400 block">Total Repas</span>
+        <div class="flex items-baseline gap-1.5">
+          <span class="text-3xl sm:text-4xl font-black tracking-tight <%= meal.exceeded? ? 'text-rose-400' : 'text-emerald-400' %>">
+            <%= meal.total_kcal %>
+          </span>
+          <span class="text-slate-400 font-bold text-xs sm:text-sm">/ <%= meal.target_kcal %> kcal</span>
+        </div>
+
+        <% if meal.exceeded? %>
+          <span class="inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-rose-400 mt-0.5">
+            ⚠️ Dépassement de <%= meal.total_kcal - meal.target_kcal %> kcal
+          </span>
+        <% else %>
+          <span class="text-[11px] sm:text-xs font-medium text-emerald-400/90 mt-0.5 block">
+            ✓ Obtenu : <%= meal.percentage_reached %>%
+          </span>
+        <% end %>
+      </div>
+
+      <!-- SVG Ring Progress -->
+      <div class="relative w-16 h-16 sm:w-20 sm:h-20 shrink-0">
+        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+          <path class="text-slate-800" stroke-width="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <path class="<%= meal.exceeded? ? 'text-rose-500' : 'text-emerald-400' %> transition-all duration-500 ease-out"
+                stroke-dasharray="<%= [meal.percentage_reached, 100].min %>, 100"
+                stroke-width="3.5"
+                stroke-linecap="round"
+                stroke="currentColor"
+                fill="none"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+        </svg>
+        <div class="absolute inset-0 flex items-center justify-center text-xs font-extrabold text-white">
+          <%= meal.percentage_reached.round %>%
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calorie Breakdown Progress Bar -->
+  <div class="space-y-1.5 pt-2">
+    <div class="flex justify-between text-[11px] sm:text-xs font-medium text-slate-400">
+      <span>Répartition par Ingrédient</span>
+      <span><%= meal.meal_ingredients.count %> aliment(s)</span>
+    </div>
+    <div class="h-3 w-full bg-slate-950 rounded-full overflow-hidden flex p-0.5 border border-slate-800">
+      <% colors = ['bg-emerald-400', 'bg-cyan-400', 'bg-amber-400', 'bg-purple-400', 'bg-rose-400'] %>
+      <% total = [meal.total_kcal, 1].max %>
+      <% meal.meal_ingredients.each_with_index do |mi, idx| %>
+        <% width_pct = (mi.kcal.to_f / total * 100).round(1) %>
+        <div class="<%= colors[idx % colors.length] %> h-full rounded-sm transition-all duration-300"
+             style="width: <%= width_pct %>%"
+             title="<%= mi.ingredient.name %>: <%= mi.kcal %> kcal (<%= width_pct %>%)">
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

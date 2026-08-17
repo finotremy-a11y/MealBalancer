@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+: "${KAMAL_HOST:?Set KAMAL_HOST to the production server hostname or IP.}"
+
+service="${KAMAL_SERVICE:-meal_balancer}"
+backup_directory="${BACKUP_DIRECTORY:-backups}"
+timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
+archive="${backup_directory}/${service}-${timestamp}.tar.gz"
+
+mkdir -p "$backup_directory"
+ssh "$KAMAL_HOST" "docker run --rm -v ${service}_storage:/source:ro alpine:3.21 tar -C /source -czf - ." > "$archive"
+tar -tzf "$archive" > /dev/null
+
+printf 'Backup created and verified: %s\n' "$archive"

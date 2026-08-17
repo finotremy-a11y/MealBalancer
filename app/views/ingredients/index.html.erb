@@ -1,0 +1,107 @@
+<div class="space-y-6 sm:space-y-8 animate-fade-in">
+  <!-- Header Banner -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl relative overflow-hidden shadow-2xl">
+    <div class="space-y-1.5">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
+        Bibliothèque d'Aliments
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Gestion des Ingrédients</h1>
+      <p class="text-slate-400 text-xs sm:text-sm max-w-xl">
+        Ajoutez et consultez la densité calorique (kcal/100g) des aliments réutilisables dans tous vos repas.
+      </p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+    <!-- Ingredients Table / List -->
+    <div class="lg:col-span-2 space-y-4">
+      <div class="p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl shadow-xl space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-base sm:text-lg font-bold text-white">Aliments Enregistrés</h3>
+          <span class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 font-semibold"><%= @ingredients.count %> aliments</span>
+        </div>
+
+        <% if @ingredients.any? %>
+          <div class="divide-y divide-slate-800/60">
+            <% @ingredients.each do |ingredient| %>
+              <div class="py-3 flex items-center justify-between hover:bg-slate-800/30 px-2.5 sm:px-3 rounded-2xl transition-colors">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center text-sm shrink-0">
+                    <%= case ingredient.category
+                        when 'Féculents' then '🍚'
+                        when 'Protéines' then '🍗'
+                        when 'Légumes' then '🥦'
+                        when 'Lipides' then '🥑'
+                        else '🥗'
+                        end %>
+                  </div>
+                  <div class="truncate">
+                    <h4 class="font-bold text-white text-sm truncate"><%= ingredient.name %></h4>
+                    <span class="text-[11px] text-slate-500 font-medium"><%= ingredient.category.presence || 'Général' %></span>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-3 sm:gap-4 shrink-0">
+                  <div class="text-right">
+                    <span class="font-black text-emerald-400 text-base"><%= ingredient.kcal_per_100g %></span>
+                    <span class="text-[9px] sm:text-[10px] text-slate-500 font-semibold uppercase block -mt-1">kcal / 100g</span>
+                  </div>
+
+                  <%= button_to ingredient_path(ingredient), method: :delete, data: { turbo_confirm: "Supprimer l'ingrédient '#{ingredient.name}' ?" }, class: "p-2.5 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-slate-800 transition-colors cursor-pointer min-w-[40px] min-h-[40px] flex items-center justify-center", title: "Supprimer" do %>
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="text-xs text-slate-400 py-4 text-center">Aucun ingrédient enregistré pour le moment.</p>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Create Ingredient Form -->
+    <div class="space-y-6">
+      <div class="p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl shadow-xl space-y-4 sm:space-y-5 sticky top-20">
+        <h3 class="text-base sm:text-lg font-bold text-white">+ Ajouter un Aliment</h3>
+
+        <%= form_with(model: @ingredient, local: true, class: "space-y-4") do |f| %>
+          <% if @ingredient.errors.any? %>
+            <div class="p-3 rounded-xl bg-rose-950/60 border border-rose-500/30 text-rose-300 text-xs">
+              <ul class="list-disc list-inside">
+                <% @ingredient.errors.full_messages.each do |msg| %>
+                  <li><%= msg %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="space-y-1.5">
+            <%= f.label :name, "Nom de l'aliment", class: "block text-xs font-semibold text-slate-300 uppercase tracking-wider" %>
+            <%= f.text_field :name, placeholder: "ex: Blanc de Poulet", class: "w-full px-3.5 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-base focus:outline-none focus:border-emerald-500 transition-colors" %>
+          </div>
+
+          <div class="space-y-1.5">
+            <%= f.label :kcal_per_100g, "Densité calorique (kcal pour 100g)", class: "block text-xs font-semibold text-slate-300 uppercase tracking-wider" %>
+            <%= f.number_field :kcal_per_100g, placeholder: "ex: 165", min: 1, class: "w-full px-3.5 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-base focus:outline-none focus:border-emerald-500 transition-colors" %>
+          </div>
+
+          <div class="space-y-1.5">
+            <%= f.label :category, "Catégorie", class: "block text-xs font-semibold text-slate-300 uppercase tracking-wider" %>
+            <%= f.select :category, [
+              ["Féculents", "Féculents"],
+              ["Protéines", "Protéines"],
+              ["Légumes", "Légumes"],
+              ["Lipides", "Lipides"],
+              ["Autre", "Autre"]
+            ], { include_blank: "Sélectionner..." }, class: "w-full px-3.5 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-base focus:outline-none focus:border-emerald-500 transition-colors" %>
+          </div>
+
+          <%= f.submit "+ Enregistrer l'aliment", class: "w-full py-3.5 rounded-xl text-sm font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-md shadow-emerald-500/20 transition-all cursor-pointer min-h-[44px]" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

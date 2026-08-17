@@ -1,0 +1,19 @@
+<%= turbo_stream.replace "meal_header_#{@meal.id}" do %>
+  <%= render "meals/meal_header", meal: @meal %>
+<% end %>
+
+<%= turbo_stream.replace "meal_ingredients_list" do %>
+  <div id="meal_ingredients_list" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <% if @meal.meal_ingredients.any? %>
+      <% @meal.meal_ingredients.each do |meal_ingredient| %>
+        <%= render "meals/ingredient_card", meal_ingredient: meal_ingredient %>
+      <% end %>
+    <% else %>
+      <div class="md:col-span-2 p-8 text-center rounded-3xl bg-slate-900/40 border border-slate-800/80 space-y-3">
+        <span class="text-3xl">🥦</span>
+        <h4 class="font-bold text-white">Aucun ingrédient dans ce repas</h4>
+        <p class="text-xs text-slate-400">Sélectionnez un ingrédient ci-contre pour composer votre repas.</p>
+      </div>
+    <% end %>
+  </div>
+<% end %>

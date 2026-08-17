@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-slate-950 text-slate-100 selection:bg-emerald-500 selection:text-slate-950">
+  <head>
+    <title><%= content_for(:title) || "MealBalancer — Équilibreur de Repas & Calories" %></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="application-name" content="MealBalancer">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+
+    <style>
+      body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        -webkit-tap-highlight-color: transparent;
+      }
+      /* Custom touch slider track styling */
+      input[type=range]::-webkit-slider-thumb {
+        height: 22px;
+        width: 22px;
+        border-radius: 50%;
+        background: #10b981;
+        cursor: pointer;
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+      }
+    </style>
+  </head>
+
+  <body class="min-h-full bg-slate-950 text-slate-100 flex flex-col antialiased bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(16,185,129,0.12),rgba(255,255,255,0))] pb-20 sm:pb-8">
+    <!-- Top Navbar -->
+    <header class="sticky top-0 z-50 backdrop-blur-xl bg-slate-900/90 border-b border-slate-800/80 shadow-lg">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2.5 group">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform duration-200">
+            <svg class="w-5 h-5 text-slate-950 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18m9-12L3 9m18 6L3 15" />
+            </svg>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-bold text-base sm:text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">MealBalancer</span>
+            <span class="text-[9px] sm:text-[10px] font-medium tracking-wider uppercase text-emerald-400/90 -mt-1">Kcal Smart Adjust</span>
+          </div>
+        </a>
+
+        <!-- Desktop Navigation links -->
+        <nav class="hidden sm:flex items-center gap-3">
+          <a href="<%= meals_path %>" class="px-3.5 py-2 rounded-xl text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition-colors">
+            Mes Repas
+          </a>
+          <a href="<%= ingredients_path %>" class="px-3.5 py-2 rounded-xl text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition-colors">
+            Bibliothèque
+          </a>
+          <a href="<%= new_meal_path %>" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-md shadow-emerald-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
+            <svg class="w-4 h-4 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            <span>Nouveau Repas</span>
+          </a>
+        </nav>
+
+        <!-- Mobile Header Shortcut -->
+        <div class="flex sm:hidden items-center gap-2">
+          <a href="<%= new_meal_path %>" class="p-2 rounded-xl bg-emerald-500 text-slate-950 font-bold flex items-center justify-center shadow-md shadow-emerald-500/20 active:scale-95" title="Nouveau Repas">
+            <svg class="w-5 h-5 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-6 lg:px-8 py-5 sm:py-8">
+      <% if notice.present? %>
+        <div class="mb-4 sm:mb-6 p-3.5 sm:p-4 rounded-2xl bg-emerald-950/70 border border-emerald-500/30 text-emerald-300 text-xs sm:text-sm flex items-center justify-between backdrop-blur-md animate-fade-in shadow-lg">
+          <div class="flex items-center gap-2.5">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span><%= notice %></span>
+          </div>
+        </div>
+      <% end %>
+
+      <% if alert.present? %>
+        <div class="mb-4 sm:mb-6 p-3.5 sm:p-4 rounded-2xl bg-rose-950/70 border border-rose-500/30 text-rose-300 text-xs sm:text-sm flex items-center justify-between backdrop-blur-md animate-fade-in shadow-lg">
+          <div class="flex items-center gap-2.5">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-rose-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span><%= alert %></span>
+          </div>
+        </div>
+      <% end %>
+
+      <%= yield %>
+    </main>
+
+    <!-- Mobile Fixed Bottom Navigation Bar -->
+    <nav class="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 border-t border-slate-800/80 backdrop-blur-xl px-4 py-2 flex items-center justify-around">
+      <a href="<%= meals_path %>" class="flex flex-col items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors <%= current_page?(meals_path) || current_page?(root_path) ? 'text-emerald-400 bg-emerald-500/10' : 'text-slate-400 hover:text-slate-200' %>">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+        <span>Repas</span>
+      </a>
+
+      <a href="<%= ingredients_path %>" class="flex flex-col items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors <%= current_page?(ingredients_path) ? 'text-emerald-400 bg-emerald-500/10' : 'text-slate-400 hover:text-slate-200' %>">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+        </svg>
+        <span>Aliments</span>
+      </a>
+
+      <a href="<%= new_meal_path %>" class="flex flex-col items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-xl text-emerald-400 hover:text-emerald-300">
+        <div class="w-7 h-7 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center font-bold shadow-md shadow-emerald-500/20">
+          <svg class="w-4 h-4 stroke-[3]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+        </div>
+        <span>Créer</span>
+      </a>
+    </nav>
+
+    <!-- Footer for Desktop -->
+    <footer class="hidden sm:block border-t border-slate-800/60 py-6 text-center text-xs text-slate-500">
+      <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <span>MealBalancer © 2026 — Équilibrage nutritionnel intelligent & dynamique</span>
+        <span class="text-slate-600">Rails 8 • Hotwire • Tailwind CSS</span>
+      </div>
+    </footer>
+  </body>
+</html>

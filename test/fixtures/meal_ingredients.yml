@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  meal: one
+  ingredient: one
+  grams: 1
+  locked: false
+
+two:
+  meal: two
+  ingredient: two
+  grams: 1
+  locked: false

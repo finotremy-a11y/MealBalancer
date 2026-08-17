@@ -1,0 +1,88 @@
+<div class="space-y-6 sm:space-y-8 animate-fade-in">
+  <!-- Top Navigation -->
+  <div class="flex items-center justify-between">
+    <a href="<%= meals_path %>" class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-400 hover:text-white transition-colors">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+      Retour aux repas
+    </a>
+
+    <div class="flex items-center gap-2">
+      <a href="<%= edit_meal_path(@meal) %>" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900 border border-slate-800 text-slate-300 hover:text-white transition-colors">
+        Paramètres
+      </a>
+    </div>
+  </div>
+
+  <!-- Header Banner -->
+  <%= render "meal_header", meal: @meal %>
+
+  <!-- Main Grid: Ingredients List & Add Sidebar -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+    <!-- Left Column (2 cols): Ingredients Cards -->
+    <div class="lg:col-span-2 space-y-4 sm:space-y-6">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+          <span>Composition du Repas</span>
+          <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 font-semibold"><%= @meal.meal_ingredients.count %></span>
+        </h3>
+        <span class="text-xs text-slate-400 font-medium hidden sm:inline">Ajustez le grammage via les curseurs ou boutons</span>
+      </div>
+
+      <div id="meal_ingredients_list" class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+        <% if @meal.meal_ingredients.any? %>
+          <% @meal.meal_ingredients.each do |meal_ingredient| %>
+            <%= render "ingredient_card", meal_ingredient: meal_ingredient %>
+          <% end %>
+        <% else %>
+          <div class="sm:col-span-2 p-8 text-center rounded-3xl bg-slate-900/40 border border-slate-800/80 space-y-3">
+            <span class="text-3xl">🥦</span>
+            <h4 class="font-bold text-white">Aucun ingrédient dans ce repas</h4>
+            <p class="text-xs text-slate-400">Sélectionnez un ingrédient ci-dessous pour composer votre repas.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Right Column (1 col): Add Ingredient Selector -->
+    <div class="space-y-6">
+      <div class="p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-xl space-y-4 sm:space-y-5 lg:sticky lg:top-20 shadow-xl">
+        <div class="space-y-1">
+          <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+            <span>+ Ajouter un Ingrédient</span>
+          </h3>
+          <p class="text-xs text-slate-400">Choisissez dans votre bibliothèque d'ingrédients.</p>
+        </div>
+
+        <% if @ingredients.any? %>
+          <%= form_with(url: add_ingredient_meal_path(@meal), method: :post, class: "space-y-4") do |f| %>
+            <div class="space-y-1.5">
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Ingrédient</label>
+              <%= f.select :ingredient_id, @ingredients.map { |i| ["#{i.name} (#{i.kcal_per_100g} kcal/100g)", i.id] }, {}, class: "w-full px-3.5 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-base focus:outline-none focus:border-emerald-500 transition-colors" %>
+            </div>
+
+            <div class="space-y-1.5">
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Grammage Initial (g)</label>
+              <%= f.number_field :grams, value: 100, min: 1, step: 5, class: "w-full px-3.5 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-base focus:outline-none focus:border-emerald-500 transition-colors" %>
+            </div>
+
+            <%= f.submit "+ Ajouter au repas", class: "w-full py-3.5 rounded-xl text-sm font-bold bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 shadow-md shadow-emerald-500/20 transition-all cursor-pointer min-h-[44px]" %>
+          <% end %>
+        <% else %>
+          <div class="text-center py-4 space-y-3">
+            <p class="text-xs text-slate-400">Aucun ingrédient disponible dans la bibliothèque.</p>
+            <a href="<%= ingredients_path %>" class="inline-block px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-800 text-white hover:bg-slate-700 transition-colors">
+              + Créer des ingrédients
+            </a>
+          </div>
+        <% end %>
+
+        <div class="pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs">
+          <span class="text-slate-400">Aliment manquant ?</span>
+          <a href="<%= ingredients_path %>" class="font-bold text-emerald-400 hover:underline">Gérer la bibliothèque →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

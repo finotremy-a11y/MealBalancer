@@ -1,0 +1,121 @@
+<%# app/views/meals/_ingredient_card.html.erb %>
+<%
+  color_classes = [
+    { bg: "from-emerald-500/10 to-teal-500/5", border: "border-emerald-500/30", text: "text-emerald-400", accent: "accent-emerald-500", dot: "bg-emerald-400" },
+    { bg: "from-cyan-500/10 to-blue-500/5", border: "border-cyan-500/30", text: "text-cyan-400", accent: "accent-cyan-500", dot: "bg-cyan-400" },
+    { bg: "from-amber-500/10 to-orange-500/5", border: "border-amber-500/30", text: "text-amber-400", accent: "accent-amber-500", dot: "bg-amber-400" },
+    { bg: "from-purple-500/10 to-indigo-500/5", border: "border-purple-500/30", text: "text-purple-400", accent: "accent-purple-500", dot: "bg-purple-400" },
+    { bg: "from-rose-500/10 to-pink-500/5", border: "border-rose-500/30", text: "text-rose-400", accent: "accent-rose-500", dot: "bg-rose-400" }
+  ]
+  color = color_classes[(meal_ingredient.id || 0) % color_classes.length]
+%>
+
+<div id="meal_ingredient_<%= meal_ingredient.id %>"
+     class="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-slate-900/70 border <%= meal_ingredient.locked ? 'border-amber-500/50 bg-amber-950/20' : 'border-slate-800/90' %> backdrop-blur-md space-y-4 transition-all duration-200 hover:border-slate-700 shadow-lg"
+     data-controller="ingredient"
+     data-ingredient-recalculate-url-value="<%= recalculate_meal_path(meal_ingredient.meal) %>"
+     data-ingredient-meal-ingredient-id-value="<%= meal_ingredient.id %>">
+
+  <!-- Top Info Row -->
+  <div class="flex items-center justify-between gap-3">
+    <div class="flex items-center gap-2.5 min-w-0">
+      <span class="w-3 h-3 rounded-full <%= color[:dot] %> shadow-sm shrink-0"></span>
+      <div class="truncate">
+        <h4 class="font-bold text-slate-100 text-base sm:text-lg leading-snug truncate"><%= meal_ingredient.ingredient.name %></h4>
+        <div class="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
+          <span><%= meal_ingredient.ingredient.kcal_per_100g %> kcal/100g</span>
+          <% if meal_ingredient.ingredient.category.present? %>
+            <span class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 text-[10px] font-semibold"><%= meal_ingredient.ingredient.category %></span>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions (Lock & Delete) -->
+    <div class="flex items-center gap-1.5 shrink-0">
+      <%= button_to toggle_lock_meal_ingredient_path(meal_ingredient), method: :patch, class: "p-2.5 rounded-xl border transition-all cursor-pointer min-w-[40px] min-h-[40px] flex items-center justify-center #{meal_ingredient.locked ? 'bg-amber-500/20 border-amber-500/40 text-amber-300' : 'bg-slate-800/80 border-slate-700/60 text-slate-400 hover:text-white'}", title: meal_ingredient.locked ? "Déverrouiller l'ingrédient" : "Verrouiller le grammage (fixe)" do %>
+        <% if meal_ingredient.locked %>
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        <% else %>
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+          </svg>
+        <% end %>
+      <% end %>
+
+      <%= button_to meal_ingredient_path(meal_ingredient), method: :delete, class: "p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/60 text-slate-400 hover:text-rose-400 hover:border-rose-500/40 transition-colors cursor-pointer min-w-[40px] min-h-[40px] flex items-center justify-center", title: "Retirer du repas" do %>
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Interactive Grams Controls & Quick Mobile Buttons -->
+  <div class="space-y-3 pt-1">
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Grammage</span>
+      <div class="flex items-center gap-1.5">
+        <input type="number"
+               min="0"
+               max="2000"
+               value="<%= meal_ingredient.grams %>"
+               data-ingredient-target="numberInput"
+               data-action="input->ingredient#syncFromNumber"
+               class="w-20 px-2.5 py-1.5 text-right text-base font-bold bg-slate-950 border border-slate-800 text-emerald-400 rounded-xl focus:outline-none focus:border-emerald-500">
+        <span class="text-xs font-bold text-slate-400">g</span>
+      </div>
+    </div>
+
+    <!-- Quick Step Buttons for Touch / Mobile -->
+    <div class="grid grid-cols-4 gap-1.5 py-1">
+      <button type="button"
+              data-action="click->ingredient#stepGrams"
+              data-delta="-50"
+              class="py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 active:bg-slate-600 text-slate-300 text-xs font-bold transition-colors">
+        -50g
+      </button>
+      <button type="button"
+              data-action="click->ingredient#stepGrams"
+              data-delta="-10"
+              class="py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 active:bg-slate-600 text-slate-300 text-xs font-bold transition-colors">
+        -10g
+      </button>
+      <button type="button"
+              data-action="click->ingredient#stepGrams"
+              data-delta="10"
+              class="py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 active:bg-slate-600 text-slate-300 text-xs font-bold transition-colors">
+        +10g
+      </button>
+      <button type="button"
+              data-action="click->ingredient#stepGrams"
+              data-delta="50"
+              class="py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 active:bg-slate-600 text-slate-300 text-xs font-bold transition-colors">
+        +50g
+      </button>
+    </div>
+
+    <!-- Range Slider -->
+    <div class="relative flex items-center pt-1">
+      <input type="range"
+             min="0"
+             max="1000"
+             step="1"
+             value="<%= meal_ingredient.grams %>"
+             data-ingredient-target="slider"
+             data-action="input->ingredient#syncFromSlider"
+             class="w-full h-3 bg-slate-800 rounded-lg appearance-none cursor-pointer <%= color[:accent] %> focus:outline-none">
+    </div>
+  </div>
+
+  <!-- Calorie Calculated Footer -->
+  <div class="pt-2 flex items-center justify-between border-t border-slate-800/60 text-xs">
+    <span class="text-slate-400 font-medium">Calories apportées</span>
+    <div class="flex items-baseline gap-1">
+      <span class="text-base font-black <%= color[:text] %>"><%= meal_ingredient.kcal %></span>
+      <span class="text-slate-500 font-semibold uppercase text-[10px]">kcal</span>
+    </div>
+  </div>
+</div>
